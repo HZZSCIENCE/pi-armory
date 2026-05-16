@@ -1,4 +1,4 @@
-# Pi Armory / 派武库
+# Pi Armory / Pi 武器库
 
 🐱 Cat-Pi 核心插件 · Core extensions for Cat-Pi
 
