@@ -1,8 +1,11 @@
 # Pi Armory
 
-Enhances Pi's session tree with **entry preview** in the "Summarize branch?" dialog.
+Two powerful extensions for Pi:
 
-When you navigate the session tree (Esc×2 or `/tree`), select a past entry, and press Enter — the dialog now shows the content of the selected entry so you know exactly what you're jumping to.
+1. **Session Tree Entry Preview** — shows selected entry content in the "Summarize branch?" dialog
+2. **Plan Mode (/plan)** — read-only exploration mode with safe code analysis, plan extraction, and progress tracking
+
+---
 
 ## Install
 
@@ -10,25 +13,17 @@ When you navigate the session tree (Esc×2 or `/tree`), select a past entry, and
 pi install git:github.com/HZZSCIENCE/pi-armory
 ```
 
-Then activate:
+## Features
 
-```
-/armory install
-```
+### Session Tree Preview (`/armory`)
 
-Restart pi.
-
-## Usage
-
-1. Open session tree: `Esc×2` or `/tree`
-2. Select any past entry, press `Enter`
-3. You'll see:
+When you navigate the session tree (Esc×2 or `/tree`), select a past entry, and press Enter — the dialog now shows the content of the selected entry so you know exactly what you're jumping to.
 
 ```
 ─────────────────────────────────
  Summarize branch?
 
- user: 帮我看下这个bug          ← shows selected entry content
+ user: 帮我看下这个bug
 
  → No summary
    Summarize
@@ -36,17 +31,34 @@ Restart pi.
 ─────────────────────────────────
 ```
 
-## Commands
+| Command | Description |
+|---------|-------------|
+| `/armory` | Toggle on/off |
+| `/armory on` | Force enable |
+| `/armory off` | Force disable |
+
+### Plan Mode (`/plan`)
+
+Read-only exploration mode for safe code analysis. When enabled, only read-only tools are available.
 
 | Command | Description |
 |---------|-------------|
-| `/armory` | Show status (✅ Active / ❌ Inactive) |
-| `/armory on` | Enable entry preview |
-| `/armory off` | Disable entry preview |
+| `/plan` | Toggle plan mode |
+| `/todos` | Show current plan progress |
+| `Ctrl+Alt+P` | Toggle plan mode shortcut |
+
+**How it works:**
+1. `/plan` → enters read-only mode (only read, grep, find, ls, bash-safe allowed)
+2. AI creates a numbered plan under a "Plan:" header
+3. Choose "Execute the plan" → full tool access restored, progress tracked
+4. AI marks completed steps with `[DONE:n]` tags
+5. Progress widget shows ☐/☑ for each step
+
+---
 
 ## Uninstall
 
-```
+```bash
 /armory off
 pi remove git:github.com/HZZSCIENCE/pi-armory
 ```

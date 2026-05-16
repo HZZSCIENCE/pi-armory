@@ -1,7 +1,7 @@
 {
   "name": "pi-armory",
-  "version": "0.1.0",
-  "description": "Pi Armory — enhances the session tree with entry preview in the Summarize branch dialog",
+  "version": "0.2.0",
+  "description": "Pi Armory — session tree preview + plan mode for safe code exploration",
   "keywords": ["pi-package"],
   "pi": {
     "extensions": ["./extensions"]
