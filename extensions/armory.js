@@ -8,7 +8,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-const AGENT_PKG = "@mariozechner/pi-coding-agent";
 const TARGET_REL = "dist/modes/interactive/interactive-mode.js";
 const PATCH_MARKER = "/* PATCHED by pi-armory */";
 
@@ -36,67 +35,110 @@ const NEW_BLOCK = `                        // pi-armory: show selected entry con
                         const title = \`Summarize branch?\\n\\n\${entryPreview}\`;
                         const summaryChoice = await this.showExtensionSelector(title, [`;
 
-function findAgentDir() {
+/**
+ * Tries to find the pi-coding-agent install directory.
+ * Uses multiple approaches for robustness.
+ */
+function findTargetFile() {
+  const candidates = [];
+
+  // 1. Check npm global prefix
+  const npmPrefix = (() => {
+    try {
+      // On Windows, npm global modules are typically in %APPDATA%/npm/node_modules
+      const appData = process.env.APPDATA;
+      if (appData) candidates.push(path.join(appData, "npm", "node_modules", "@mariozechner", "pi-coding-agent", TARGET_REL));
+      const localAppData = process.env.LOCALAPPDATA;
+      if (localAppData) candidates.push(path.join(localAppData, "npm", "node_modules", "@mariozechner", "pi-coding-agent", TARGET_REL));
+      // Unix-like
+      candidates.push(path.join(process.env.HOME || process.env.USERPROFILE || "/root", ".nvm", "versions", "node", "*", "lib", "node_modules", "@mariozechner", "pi-coding-agent", TARGET_REL));
+      // Standard global
+      candidates.push(path.join(path.sep, "usr", "local", "lib", "node_modules", "@mariozechner", "pi-coding-agent", TARGET_REL));
+    } catch {}
+  })();
+
+  // 2. Try require.resolve (may fail in jiti but worth trying)
   try {
-    const pkgJson = require.resolve(`${AGENT_PKG}/package.json`);
-    return path.dirname(pkgJson);
-  } catch {
-    let dir = __dirname;
-    for (let i = 0; i < 10; i++) {
-      const candidate = path.join(dir, "node_modules", AGENT_PKG);
-      if (fs.existsSync(candidate)) return candidate;
-      const parent = path.dirname(dir);
-      if (parent === dir) break;
-      dir = parent;
+    const p = require.resolve("@mariozechner/pi-coding-agent/package.json");
+    candidates.push(path.join(path.dirname(p), TARGET_REL));
+  } catch {}
+
+  // 3. Try walking from known paths
+  try {
+    if (typeof __dirname === "string") {
+      // Walk up from extension directory to find node_modules/@mariozechner/pi-coding-agent
+      let dir = __dirname;
+      for (let i = 0; i < 10; i++) {
+        const c = path.join(dir, "node_modules", "@mariozechner", "pi-coding-agent", TARGET_REL);
+        if (fs.existsSync(c)) candidates.push(c);
+        const parent = path.dirname(dir);
+        if (parent === dir) break;
+        dir = parent;
+      }
     }
-    return null;
+  } catch {}
+
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
   }
+  return null;
 }
 
-function isPatched(filePath) {
-  try {
-    return fs.readFileSync(filePath, "utf-8").includes(PATCH_MARKER);
-  } catch {
-    return false;
-  }
+function readFile(p) {
+  try { return fs.readFileSync(p, "utf-8"); } catch { return null; }
 }
 
-function applyPatch(filePath) {
-  const content = fs.readFileSync(filePath, "utf-8");
-  if (content.includes(PATCH_MARKER)) return { success: true, message: "Already patched." };
-  if (!content.includes(OLD_BLOCK)) return { success: false, message: "Target code not found. Pi version may be incompatible." };
-
-  fs.writeFileSync(filePath, content.replace(OLD_BLOCK, NEW_BLOCK), "utf-8");
-  return { success: true, message: "Patch applied. Restart pi to activate." };
+function writeFile(p, content) {
+  try { fs.writeFileSync(p, content, "utf-8"); return true; } catch { return false; }
 }
 
-function removePatch(filePath) {
-  const content = fs.readFileSync(filePath, "utf-8");
-  if (!content.includes(PATCH_MARKER)) return { success: true, message: "Not patched." };
+function isPatched(p) {
+  const c = readFile(p);
+  return c ? c.includes(PATCH_MARKER) : false;
+}
 
-  // Find lines from marker to the "const summaryChoice" line and replace
-  const markerIdx = content.indexOf(PATCH_MARKER);
-  const prefix = content.slice(0, Math.max(0, content.lastIndexOf("\n", markerIdx) - 5000));
-  const afterMarker = content.slice(markerIdx);
+function applyPatch(p) {
+  const c = readFile(p);
+  if (!c) return { success: false, message: "Cannot read target file." };
+  if (c.includes(PATCH_MARKER)) return { success: true, message: "Already patched." };
+  if (!c.includes(OLD_BLOCK)) return { success: false, message: "Target code not found. Pi may have been updated — incompatible version." };
+
+  const written = writeFile(p, c.replace(OLD_BLOCK, NEW_BLOCK));
+  return written
+    ? { success: true, message: "Patch applied. Restart pi to activate." }
+    : { success: false, message: "Cannot write target file (permissions?)." };
+}
+
+function removePatch(p) {
+  const c = readFile(p);
+  if (!c) return { success: false, message: "Cannot read target file." };
+  if (!c.includes(PATCH_MARKER)) return { success: true, message: "Not patched." };
+
+  const markerIdx = c.indexOf(PATCH_MARKER);
+  const prefix = c.slice(0, Math.max(0, c.lastIndexOf("\n", markerIdx) - 6000));
+  const afterMarker = c.slice(markerIdx);
   const summaryIdx = afterMarker.indexOf("const summaryChoice = await this.showExtensionSelector(title, [");
-  if (summaryIdx < 0) return { success: false, message: "Could not find patched block." };
+  if (summaryIdx < 0) return { success: false, message: "Could not find patched block — try reinstalling pi." };
 
   const restored = prefix + OLD_BLOCK + afterMarker.slice(summaryIdx + "const summaryChoice = await this.showExtensionSelector(title, [".length);
-  fs.writeFileSync(filePath, restored, "utf-8");
-  return { success: true, message: "Patch removed. Restart pi to deactivate." };
+  return writeFile(p, restored)
+    ? { success: true, message: "Patch removed. Restart pi to deactivate." }
+    : { success: false, message: "Cannot write target file." };
 }
 
 /** @param {import("@mariozechner/pi-coding-agent").ExtensionAPI} pi */
 export default function (pi) {
-  const agentDir = findAgentDir();
-  const targetFile = agentDir ? path.join(agentDir, TARGET_REL) : null;
+  const targetFile = findTargetFile();
 
-  if (!targetFile || !fs.existsSync(targetFile)) {
-    if (pi.log) pi.log.warn("pi-armory: could not locate pi-coding-agent installation.");
+  if (!targetFile) {
+    pi.registerCommand("armory", {
+      description: "Pi Armory — show entry preview in summarize dialog",
+      handler: async (_args, ctx) => {
+        ctx.ui.notify("Pi Armory: could not locate pi installation. Please report this issue.", "error");
+      },
+    });
     return;
   }
-
-  const patched = isPatched(targetFile);
 
   pi.registerCommand("armory", {
     description: "Pi Armory — show entry preview in summarize dialog",
@@ -104,7 +146,8 @@ export default function (pi) {
       const sub = (args || "").trim().toLowerCase();
 
       if (sub === "status") {
-        ctx.ui.notify(`Pi Armory: ${isPatched(targetFile) ? "✅ Active" : "❌ Inactive"}`, "info");
+        const ok = isPatched(targetFile);
+        ctx.ui.notify(`Pi Armory: ${ok ? "✅ Active" : "❌ Inactive"}`, "info");
         return;
       }
 
@@ -120,17 +163,17 @@ export default function (pi) {
         return;
       }
 
-      const s = isPatched(targetFile);
+      const ok = isPatched(targetFile);
       ctx.ui.notify(
-        `Pi Armory ${s ? "✅ Active" : "❌ Inactive"}\n/armory install | uninstall | status`,
+        `Pi Armory ${ok ? "✅ Active" : "❌ Inactive"}  |  /armory on  |  /armory off`,
         "info"
       );
     },
   });
 
-  if (patched) {
-    pi.log?.info?.("Pi Armory ✅ active. /armory to manage.");
+  if (isPatched(targetFile)) {
+    // Already patched from before, just silently work
   } else {
-    pi.log?.info?.("Pi Armory ❌ not active. Type /armory install to enable.");
+    // Not patched yet
   }
 }

@@ -40,14 +40,13 @@ Restart pi.
 
 | Command | Description |
 |---------|-------------|
-| `/armory` | Show status |
-| `/armory install` | Apply patch |
-| `/armory uninstall` | Remove patch |
-| `/armory status` | Check if active |
+| `/armory` | Show status (✅ Active / ❌ Inactive) |
+| `/armory on` | Enable entry preview |
+| `/armory off` | Disable entry preview |
 
 ## Uninstall
 
 ```
-/armory uninstall
-pi remove git:github.com/luoxuanbaogan/pi-armory
+/armory off
+pi remove git:github.com/HZZSCIENCE/pi-armory
 ```
