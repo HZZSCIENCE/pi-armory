@@ -7,6 +7,7 @@
 
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
 import { Container, Spacer, Text } from "@mariozechner/pi-tui";
+import { execSync } from "node:child_process";
 
 export default function (pi: ExtensionAPI): void {
   let enabled = true;
@@ -41,6 +42,18 @@ export default function (pi: ExtensionAPI): void {
       } else {
         ctx.ui.setHeader(undefined);
         ctx.ui.notify("🔻 BANNER: OFF", "info");
+      }
+    },
+  });
+
+  pi.registerCommand("cat-update", {
+    description: "Update Cat-Pi to latest version",
+    handler: async (_args, ctx) => {
+      try {
+        execSync("npm update -g @tropical_meow/cat-pi", { stdio: "pipe", timeout: 60000 });
+        ctx.ui.notify("⚡ CAT-PI: UPDATED — restart to apply", "success");
+      } catch {
+        ctx.ui.notify("❌ CAT-PI: update failed. Try: npm update -g @tropical_meow/cat-pi", "error");
       }
     },
   });
