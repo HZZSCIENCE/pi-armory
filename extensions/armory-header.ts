@@ -17,9 +17,9 @@ export default function (pi: ExtensionAPI): void {
 
     container.addChild(new Spacer(1));
     container.addChild(new Text(theme.fg("accent", theme.bold("  ⚡ PI ARMORY // SYS.ONLINE")), 1, 0));
-    container.addChild(new Text("  " + theme.fg("success", " ▶") + theme.fg("accent", " /armory") + theme.fg("muted", "  会话树预览 · Tree Preview") + theme.fg("dim", "  [默认开启·ON]"), 1, 0));
+    container.addChild(new Text("  " + theme.fg("success", " ▶") + theme.fg("accent", " /armory") + theme.fg("muted", "  会话树预览 · Tree Preview") + theme.fg("dim", "  [默认开启 · Default ON]"), 1, 0));
     container.addChild(new Text("  " + theme.fg("dim", " ▷") + theme.fg("warning", " /plan") + theme.fg("muted", "    计划模式 · Plan Mode"), 1, 0));
-    container.addChild(new Text("  " + theme.fg("success", " ▶") + theme.fg("accent", " /trash") + theme.fg("muted", "  回收站 · Recycle Bin") + theme.fg("dim", "  [默认开启·ON]"), 1, 0));
+    container.addChild(new Text("  " + theme.fg("success", " ▶") + theme.fg("accent", " /trash") + theme.fg("muted", "  回收站 · Recycle Bin") + theme.fg("dim", "  [默认开启 · Default ON]"), 1, 0));
     container.addChild(new Text("  " + theme.fg("dim", " ▷") + theme.fg("dim", " /todos") + theme.fg("muted", "  计划进度 · Progress"), 1, 0));
     container.addChild(new Spacer(1));
 
