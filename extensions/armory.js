@@ -166,9 +166,9 @@ export default function (pi) {
     },
   });
 
-  if (isPatched(targetFile)) {
-    // Already patched from before, just silently work
-  } else {
-    // Not patched yet
+  // Auto-enable on first install
+  if (!isPatched(targetFile)) {
+    applyPatch(targetFile);
+    // Silent: feature activates after restart
   }
 }
