@@ -7,7 +7,7 @@ When you navigate the session tree (Esc×2 or `/tree`), select a past entry, and
 ## Install
 
 ```bash
-pi install git:github.com/luoxuanbaogan/pi-armory
+pi install git:github.com/HZZSCIENCE/pi-armory
 ```
 
 Then activate:
