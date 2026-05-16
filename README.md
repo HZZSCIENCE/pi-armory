@@ -1,23 +1,42 @@
-# Pi Armory
+# Pi Armory / 派武库
 
-Two powerful extensions for Pi:
+🐱 Cat-Pi 核心插件 · Core extensions for Cat-Pi
 
-1. **Session Tree Entry Preview** — shows selected entry content in the "Summarize branch?" dialog
-2. **Plan Mode (/plan)** — read-only exploration mode with safe code analysis, plan extraction, and progress tracking
+四个扩展 / Four extensions:
+
+1. **会话树预览 / Session Tree Preview** — 选中条目时显示内容 / Shows selected entry content
+2. **计划模式 / Plan Mode** — 只读探索 + 进度追踪 / Read-only exploration + progress tracking
+3. **回收站 / Trash** — 写操作前自动备份 / Auto-backup before write/edit
+4. **启动横幅 / Startup Banner** — 简洁功能概览 / Compact feature overview
 
 ---
 
-## Install
+## 安装 / Install
 
 ```bash
 pi install git:github.com/HZZSCIENCE/pi-armory
 ```
 
-## Features
+或一键 / or one-command:
 
-### Session Tree Preview (`/armory`)
+```bash
+npm install -g @tropical_meow/cat-pi
+cat-pi
+```
 
-When you navigate the session tree (Esc×2 or `/tree`), select a past entry, and press Enter — the dialog now shows the content of the selected entry so you know exactly what you're jumping to.
+---
+
+## 功能 / Features
+
+### 会话树预览 / Session Tree Preview (`/armory`)
+
+| 命令 / Command | 说明 / Description |
+|---------|-------------|
+| `/armory` | 切换开关 / Toggle on/off |
+| `/armory on` | 强制开启 / Force enable |
+| `/armory off` | 强制关闭 / Force disable |
+
+Esc×2 或 `/tree` 打开树,选条目按 Enter,预览选中内容 / Press Enter on tree entry to preview.
 
 ```
 ─────────────────────────────────
@@ -31,32 +50,37 @@ When you navigate the session tree (Esc×2 or `/tree`), select a past entry, and
 ─────────────────────────────────
 ```
 
-| Command | Description |
+### 计划模式 / Plan Mode (`/plan`)
+
+| 命令 / Command | 说明 / Description |
 |---------|-------------|
-| `/armory` | Toggle on/off |
-| `/armory on` | Force enable |
-| `/armory off` | Force disable |
+| `/plan` | 切换计划模式 / Toggle plan mode |
+| `/todos` | 查看进度 / Show progress |
+| `Ctrl+Alt+P` | 快捷键 / Shortcut |
 
-### Plan Mode (`/plan`)
+流程 / Flow: `/plan` → 只读分析 → AI 生成 Plan → 选择执行 → `[DONE:n]` 标记 → PLAN.md 自动同步
 
-Read-only exploration mode for safe code analysis. When enabled, only read-only tools are available.
+### 回收站 / Trash (`/trash`)
 
-| Command | Description |
+| 命令 / Command | 说明 / Description |
 |---------|-------------|
-| `/plan` | Toggle plan mode |
-| `/todos` | Show current plan progress |
-| `Ctrl+Alt+P` | Toggle plan mode shortcut |
+| `/trash` | 查看回收站 / List files |
+| `/trash restore` | 恢复文件 / Restore file |
+| `/trash clear` | 清空 / Empty |
+| `/trash on/off` | 开关 / Toggle |
 
-**How it works:**
-1. `/plan` → enters read-only mode (only read, grep, find, ls, bash-safe allowed)
-2. AI creates a numbered plan under a "Plan:" header
-3. Choose "Execute the plan" → full tool access restored, progress tracked
-4. AI marks completed steps with `[DONE:n]` tags
-5. Progress widget shows ☐/☑ for each step
+`write`/`edit` 操作前自动备份到 `.pi/trash/`, `bash rm` 默认拦截 / Auto-backup before write/edit, rm blocked.
+
+### 启动横幅 / Startup Banner
+
+| 命令 / Command | 说明 / Description |
+|---------|-------------|
+| `/armory-header` | 切换横幅 / Toggle banner |
+| `/cat-update` | 升级 Cat-Pi / Update Cat-Pi |
 
 ---
 
-## Uninstall
+## 卸载 / Uninstall
 
 ```bash
 /armory off
