@@ -16,11 +16,26 @@ import type { AgentMessage } from "@mariozechner/pi-agent-core";
 import type { AssistantMessage, TextContent } from "@mariozechner/pi-ai";
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
 import { Key } from "@mariozechner/pi-tui";
+import * as fs from "node:fs";
+import * as path from "node:path";
 import { extractTodoItems, isSafeCommand, markCompletedSteps, type TodoItem } from "./utils.js";
 
 // Tools
 const PLAN_MODE_TOOLS = ["read", "bash", "grep", "find", "ls", "questionnaire"];
 const NORMAL_MODE_TOOLS = ["read", "bash", "edit", "write"];
+const PLAN_MD = "PLAN.md";
+
+function writePlanMd(items: TodoItem[], cwd: string): void {
+	const file = path.join(cwd, PLAN_MD);
+	const done = items.filter(t => t.completed).length;
+	const header = `# Plan (${done}/${items.length})\n\n`;
+	const body = items.map(t => `- [${t.completed ? "x" : " "}] ${t.text}`).join("\n");
+	fs.writeFileSync(file, header + body + "\n", "utf-8");
+}
+
+function removePlanMd(cwd: string): void {
+	try { fs.unlinkSync(path.join(cwd, PLAN_MD)); } catch {}
+}
 
 function isAssistantMessage(m: AgentMessage): m is AssistantMessage {
 	return m.role === "assistant" && Array.isArray(m.content);
@@ -79,6 +94,7 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 			ctx.ui.notify("⚡ PLAN MODE: ENGAGED [READ-ONLY]", "info");
 		} else {
 			pi.setActiveTools(NORMAL_MODE_TOOLS);
+			removePlanMd(process.cwd());
 			ctx.ui.notify("🔻 PLAN MODE: DISENGAGED [FULL ACCESS]", "info");
 		}
 		updateStatus(ctx);
@@ -204,6 +220,7 @@ After completing a step, include a [DONE:n] tag in your response.`,
 		const text = getTextContent(event.message);
 		if (markCompletedSteps(text, todoItems) > 0) {
 			updateStatus(ctx);
+			writePlanMd(todoItems, process.cwd());
 		}
 		persistState();
 	});
@@ -219,6 +236,7 @@ After completing a step, include a [DONE:n] tag in your response.`,
 				executionMode = false;
 				todoItems = [];
 				pi.setActiveTools(NORMAL_MODE_TOOLS);
+				removePlanMd(process.cwd());
 				updateStatus(ctx);
 				persistState();
 			}
@@ -236,6 +254,7 @@ After completing a step, include a [DONE:n] tag in your response.`,
 		}
 
 		if (todoItems.length > 0) {
+			writePlanMd(todoItems, process.cwd());
 			const todoListText = todoItems.map((t, i) => `${i + 1}. ☐ ${t.text}`).join("\n");
 			pi.sendMessage(
 				{
