@@ -134,7 +134,7 @@ export default function (pi) {
     pi.registerCommand("armory", {
       description: "Pi Armory — show entry preview in summarize dialog",
       handler: async (_args, ctx) => {
-        ctx.ui.notify("Pi Armory: could not locate pi installation. Please report this issue.", "error");
+        ctx.ui.notify("Pi Armory ❌ not found", "error");
       },
     });
     return;
@@ -144,26 +144,26 @@ export default function (pi) {
     description: "Pi Armory — show entry preview in summarize dialog",
     handler: async (args, ctx) => {
       const sub = (args || "").trim().toLowerCase();
+      const notify = (msg, type) => ctx.ui.notify(`Pi Armory ${msg}`, type || "info");
 
       if (sub === "on") {
         const r = applyPatch(targetFile);
-        ctx.ui.notify(`Pi Armory: ${r.message}`, r.success ? "success" : "error");
+        notify(r.success ? "✅ on" : `❌ ${r.message}`, r.success ? "success" : "error");
         return;
       }
-
       if (sub === "off") {
         const r = removePatch(targetFile);
-        ctx.ui.notify(`Pi Armory: ${r.message}`, r.success ? "success" : "error");
+        notify(r.success ? "⭕ off" : `❌ ${r.message}`, "warning");
         return;
       }
 
-      // No args: toggle
+      // Toggle
       if (isPatched(targetFile)) {
         const r = removePatch(targetFile);
-        ctx.ui.notify(`Pi Armory: ${r.message}`, "warning");
+        notify(r.success ? "⭕ off" : `❌ ${r.message}`, "warning");
       } else {
         const r = applyPatch(targetFile);
-        ctx.ui.notify(`Pi Armory: ${r.message}`, r.success ? "success" : "info");
+        notify(r.success ? "✅ on" : `❌ ${r.message}`, r.success ? "success" : "error");
       }
     },
   });
