@@ -151,14 +151,14 @@ export default function (pi) {
       }
       if (sub === "off") {
         const r = removePatch(targetFile);
-        notify(r.success ? "🔻 PI ARMORY: DISENGAGED [GRID DOWN]" : `❌ ${r.message}`, r.success ? "warning" : "error");
+        notify(r.success ? "🔻 PI ARMORY: DISENGAGED [GRID DOWN]" : `❌ ${r.message}`, "info");
         return;
       }
 
       // Toggle
       if (isPatched(targetFile)) {
         const r = removePatch(targetFile);
-        notify(r.success ? "🔻 PI ARMORY: DISENGAGED [GRID DOWN]" : `❌ ${r.message}`, r.success ? "warning" : "error");
+        notify(r.success ? "🔻 PI ARMORY: DISENGAGED [GRID DOWN]" : `❌ ${r.message}`, "info");
       } else {
         const r = applyPatch(targetFile);
         notify(r.success ? "⚡ PI ARMORY: ENGAGED [SYSTEM ACTIVE]" : `❌ ${r.message}`, r.success ? "success" : "error");

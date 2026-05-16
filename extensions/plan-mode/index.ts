@@ -76,7 +76,7 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 
 		if (planModeEnabled) {
 			pi.setActiveTools(PLAN_MODE_TOOLS);
-			ctx.ui.notify("⚡ PLAN MODE: ENGAGED [READ-ONLY]", "warning");
+			ctx.ui.notify("⚡ PLAN MODE: ENGAGED [READ-ONLY]", "info");
 		} else {
 			pi.setActiveTools(NORMAL_MODE_TOOLS);
 			ctx.ui.notify("🔻 PLAN MODE: DISENGAGED [FULL ACCESS]", "info");
