@@ -145,29 +145,26 @@ export default function (pi) {
     handler: async (args, ctx) => {
       const sub = (args || "").trim().toLowerCase();
 
-      if (sub === "status") {
-        const ok = isPatched(targetFile);
-        ctx.ui.notify(`Pi Armory: ${ok ? "✅ Active" : "❌ Inactive"}`, "info");
-        return;
-      }
-
-      if (sub === "install" || sub === "on") {
+      if (sub === "on") {
         const r = applyPatch(targetFile);
         ctx.ui.notify(`Pi Armory: ${r.message}`, r.success ? "success" : "error");
         return;
       }
 
-      if (sub === "uninstall" || sub === "off") {
+      if (sub === "off") {
         const r = removePatch(targetFile);
         ctx.ui.notify(`Pi Armory: ${r.message}`, r.success ? "success" : "error");
         return;
       }
 
-      const ok = isPatched(targetFile);
-      ctx.ui.notify(
-        `Pi Armory ${ok ? "✅ Active" : "❌ Inactive"}  |  /armory on  |  /armory off`,
-        "info"
-      );
+      // No args: toggle
+      if (isPatched(targetFile)) {
+        const r = removePatch(targetFile);
+        ctx.ui.notify(`Pi Armory: ${r.message}`, "warning");
+      } else {
+        const r = applyPatch(targetFile);
+        ctx.ui.notify(`Pi Armory: ${r.message}`, r.success ? "success" : "info");
+      }
     },
   });
 
