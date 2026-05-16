@@ -114,13 +114,11 @@ function removePatch(p) {
   if (!c) return { success: false, message: "Cannot read target file." };
   if (!c.includes(PATCH_MARKER)) return { success: true, message: "Not patched." };
 
-  const markerIdx = c.indexOf(PATCH_MARKER);
-  const prefix = c.slice(0, Math.max(0, c.lastIndexOf("\n", markerIdx) - 6000));
-  const afterMarker = c.slice(markerIdx);
-  const summaryIdx = afterMarker.indexOf("const summaryChoice = await this.showExtensionSelector(title, [");
-  if (summaryIdx < 0) return { success: false, message: "Could not find patched block — try reinstalling pi." };
+  // Replace patched region (from "// pi-armory:" to "title, [" inclusive) with original
+  const patchedRegion = /\/\/ pi-armory:.*?[\s\S]*?const summaryChoice = await this\.showExtensionSelector\(title, \[/;
+  const restored = c.replace(patchedRegion, OLD_BLOCK);
+  if (restored === c) return { success: false, message: "Could not find patched block." };
 
-  const restored = prefix + OLD_BLOCK + afterMarker.slice(summaryIdx + "const summaryChoice = await this.showExtensionSelector(title, [".length);
   return writeFile(p, restored)
     ? { success: true, message: "Patch removed. Restart pi to deactivate." }
     : { success: false, message: "Cannot write target file." };
