@@ -142,26 +142,26 @@ export default function (pi) {
     description: "Pi Armory — show entry preview in summarize dialog",
     handler: async (args, ctx) => {
       const sub = (args || "").trim().toLowerCase();
-      const notify = (msg, type) => ctx.ui.notify(`Pi Armory ${msg}`, type || "info");
+      const notify = (msg, type) => ctx.ui.notify(msg, type || "info");
 
       if (sub === "on") {
         const r = applyPatch(targetFile);
-        notify(r.success ? "✅ on" : `❌ ${r.message}`, r.success ? "success" : "error");
+        notify(r.success ? "⚡ PI ARMORY: ENGAGED [SYSTEM ACTIVE]" : `❌ ${r.message}`, r.success ? "success" : "error");
         return;
       }
       if (sub === "off") {
         const r = removePatch(targetFile);
-        notify(r.success ? "⭕ off" : `❌ ${r.message}`, "warning");
+        notify(r.success ? "▲ ALERT: PI ARMORY DISENGAGED [GRID DOWN]" : `❌ ${r.message}`, r.success ? "warning" : "error");
         return;
       }
 
       // Toggle
       if (isPatched(targetFile)) {
         const r = removePatch(targetFile);
-        notify(r.success ? "⭕ off" : `❌ ${r.message}`, "warning");
+        notify(r.success ? "▲ ALERT: PI ARMORY DISENGAGED [GRID DOWN]" : `❌ ${r.message}`, r.success ? "warning" : "error");
       } else {
         const r = applyPatch(targetFile);
-        notify(r.success ? "✅ on" : `❌ ${r.message}`, r.success ? "success" : "error");
+        notify(r.success ? "⚡ PI ARMORY: ENGAGED [SYSTEM ACTIVE]" : `❌ ${r.message}`, r.success ? "success" : "error");
       }
     },
   });
